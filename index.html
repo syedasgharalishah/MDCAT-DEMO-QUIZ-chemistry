@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDCAT Biology Quiz - Chapter 1: Acellular Life</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: #2C3E50;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: #F8F9FA; /* Match body background */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .quiz-title {
+            color: #2C3E50;
+            font-weight: 700;
+        }
+        /* Removed progress bar container and related styles */
+        .accent-button {
+            background: linear-gradient(to right, #E6E6FA, #FFDAB9);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .accent-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease-in-out;
+        }
+        .option-item {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            background-color: #f0f0f0;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+            border: 1px solid #ddd;
+        }
+        .option-item:hover {
+            transform: scale(1.05);
+            background-color: #e5e5e5;
+        }
+        .option-item.correct {
+            background-color: #90EE90; /* Light green */
+            animation: pulse-green 0.5s infinite alternate;
+        }
+        .option-item.wrong {
+            background-color: #FF6B6B; /* Red */
+            animation: shake-red 0.3s ease-in-out;
+        }
+        @keyframes pulse-green {
+            from { box-shadow: 0 0 0 0 rgba(144, 238, 144, 0.7); }
+            to { box-shadow: 0 0 0 10px rgba(144, 238, 144, 0); }
+        }
+        @keyframes shake-red {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .special-question-border {
+            border: 4px solid #FFD700; /* Gold color */
+        }
+        .drag-item {
+            background-color: #e0f2f7;
+            padding: 0.5rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #a7d9ed;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+        }
+        .drag-handle {
+            cursor: grab;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+            color: #555;
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 2000;
+            text-align: center;
+            max-width: 90%;
+        }
+        .message-box button {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #20B2AA;
+            color: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            border: none;
+        }
+        /* Hidden by default */
+        #login-screen, #name-entry-screen, #quiz-container, #results-screen {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-4 px-2 sm:px-4 md:px-6">
+
+    <div id="message-box" class="message-box hidden">
+        <p id="message-text"></p>
+        <button onclick="hideMessageBox()">OK</button>
+    </div>
+
+    <div id="login-screen" class="flex flex-col items-center justify-center min-h-screen w-full max-w-md p-6 card">
+        <h2 class="text-3xl font-bold mb-6 text-center quiz-title">Login to Quiz</h2>
+        <input type="text" id="login-id" placeholder="Enter ID" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+        <input type="password" id="login-password" placeholder="Enter Password" class="w-full p-3 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+        <button id="login-button" class="w-full py-3 rounded-lg text-white font-bold accent-button">Login</button>
+        <p id="login-error" class="text-red-500 mt-4 hidden">Invalid ID or Password</p>
+    </div>
+
+    <div id="name-entry-screen" class="flex flex-col items-center justify-center min-h-screen w-full max-w-md p-6 card">
+        <h2 class="text-3xl font-bold mb-6 text-center quiz-title">Enter Your Details</h2>
+        <input type="text" id="candidate-name" placeholder="Enter Your Full Name" class="w-full p-3 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+        <button id="start-quiz-button" class="w-full py-3 rounded-lg text-white font-bold accent-button">Start Quiz</button>
+    </div>
+
+    <div id="quiz-container" class="w-full max-w-4xl flex flex-col items-center">
+        <header class="sticky-header w-full py-4 px-4 sm:px-6 md:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
+                <div class="text-sm text-[#6D6875] mb-2 sm:mb-0 sm:order-2 flex items-center">
+                    <i class="far fa-calendar-alt mr-2"></i> <span id="live-date"></span>
+                </div>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-center quiz-title sm:order-1 flex-grow">MCQs for Medical Entrance Test – Chapter 1</h1>
+                <div class="text-sm text-[#6D6875] mt-2 sm:mt-0 sm:order-3">Updated on: <span id="updated-date"></span></div>
+            </div>
+
+            <div class="flex flex-col items-center my-6">
+                <img src="https://i.ibb.co/zHDMrzbf/20250520-0957-Timeless-Healing-Wisdom-simple-compose-01jvqa0g2zfmzs4tq83z7k3h93.png" alt="Medical Entrance Banner" class="w-full max-w-2xl rounded-lg shadow-md">
+                <p class="font-bold text-lg mt-3">Medical Entrance Success Pakistan</p>
+                <p class="text-sm text-gray-700">Contact: 03265762698</p>
+            </div>
+        </header>
+
+        <main class="w-full flex flex-col md:flex-row md:items-start md:space-x-6 px-4 sm:px-6 md:px-8 mt-6">
+            <div class="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md mb-6 md:mb-0">
+                <h3 class="text-xl font-semibold mb-4">Quiz Status</h3>
+                <div class="text-center mb-4">
+                    <p class="text-gray-600">Time Remaining:</p>
+                    <p id="timer" class="text-3xl font-bold text-teal-600">00:00:00</p>
+                </div>
+                <div class="text-center mb-6">
+                    <p class="text-gray-600">Question:</p>
+                    <p class="text-2xl font-bold text-gray-800"><span id="current-question-number">1</span> / <span id="total-questions">100</span></p>
+                </div>
+                <div class="flex flex-col space-y-3">
+                    <button id="prev-button" class="accent-button py-2 rounded-lg text-white font-semibold flex items-center justify-center">
+                        <i class="fas fa-arrow-left mr-2"></i> Previous
+                    </button>
+                    <button id="next-button" class="accent-button py-2 rounded-lg text-white font-semibold flex items-center justify-center">
+                        Next <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                    <button id="surprise-me-button" class="accent-button py-2 rounded-lg text-white font-semibold flex items-center justify-center">
+                        <i class="fas fa-random mr-2"></i> Surprise Me (30%)
+                    </button>
+                    <button id="submit-quiz-button" class="bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-semibold mt-4">
+                        Submit Quiz
+                    </button>
+                </div>
+            </div>
+
+            <div id="question-area" class="w-full md:w-3/4 card">
+                <div id="mcq-content">
+                    <p class="text-lg font-semibold mb-4" id="question-text"></p>
+                    <div id="question-image" class="mb-4 hidden">
+                        <img src="" alt="Question Image" class="w-full h-auto max-h-64 object-contain rounded-lg shadow-sm mx-auto">
+                        <p class="text-center text-sm text-gray-500 mt-2" id="image-caption"></p>
+                    </div>
+                    <div id="options-container">
+                        </div>
+                </div>
+
+                <div id="drag-drop-content" class="hidden">
+                    <p class="text-lg font-semibold mb-4" id="drag-drop-question-text"></p>
+                    <div id="drag-drop-items" class="flex flex-col">
+                        </div>
+                    <button id="check-drag-drop-button" class="accent-button py-2 px-4 rounded-lg text-white font-semibold mt-4">Check Order</button>
+                </div>
+
+                <div id="solution-container" class="mt-6 p-4 bg-[#FFF5EE] rounded-lg shadow-inner hidden">
+                    <h4 class="text-md font-bold mb-2 text-teal-700">Solution:</h4>
+                    <p id="solution-text" class="text-gray-700"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="results-screen" class="flex flex-col items-center justify-center min-h-screen w-full max-w-md p-6 card hidden">
+        <h2 class="text-3xl font-bold mb-6 text-center quiz-title">Quiz Results</h2>
+        <p class="text-lg mb-2">Name: <span id="result-name" class="font-semibold"></span></p>
+        <p class="text-lg mb-2">Score: <span id="result-score" class="font-semibold"></span> / <span id="result-total" class="font-semibold"></span></p>
+        <p class="text-lg mb-2">Questions Attempted: <span id="result-attempted" class="font-semibold"></span></p>
+        <p class="text-lg mb-4">Time Taken: <span id="result-time-taken" class="font-semibold"></span></p>
+        <button id="submit-results-button" class="w-full py-3 rounded-lg text-white font-bold accent-button">Submit Results</button>
+        <p id="submission-status" class="mt-4 text-sm text-gray-600"></p>
+    </div>
+
+    <script>
+        // --- Security Measures ---
+        document.addEventListener('contextmenu', event => event.preventDefault()); // Disable right-click
+        document.addEventListener('keydown', event => {
+            // Disable F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S
+            if (event.key === 'F12' ||
+                (event.ctrlKey && event.shiftKey && event.key === 'I') ||
+                (event.ctrlKey && event.key === 'U') ||
+                (event.ctrlKey && event.key === 'S')) {
+                event.preventDefault();
+                showMessageBox("Developer tools are disabled to prevent cheating.");
+            }
+        });
+
+        // Disable copy/paste
+        document.addEventListener('copy', event => event.preventDefault());
+        document.addEventListener('cut', event => event.preventDefault());
+        document.addEventListener('paste', event => event.preventDefault());
+
+
+        function showMessageBox(message) {
+            document.getElementById('message-text').innerText = message;
+            document.getElementById('message-box').classList.remove('hidden');
+        }
+
+        function hideMessageBox() {
+            document.getElementById('message-box').classList.add('hidden');
+        }
+
+        // --- Global Variables ---
+        const LOGIN_ID = 'todayquiz';
+        const LOGIN_PASSWORD = '1122';
+        const QUIZ_DATE = 'May 23, 2025'; // The specific date for today's special question
+        const FORMSPREE_URL = 'https://formspree.io/f/xdkgvgbd';
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizStartTime;
+        let timerInterval;
+        let candidateFullName = '';
+        let quizQuestions = []; // Will be populated with MCQs
+        let originalQuestionOrder = []; // To prevent repeated orders within 24 hours
+        let lastQuizTaken = localStorage.getItem('lastQuizTaken');
+
+        // --- Utility Functions ---
+        function formatDate(date) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(date).toLocaleDateString(undefined, options);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function getTodayDateString() {
+            return formatDate(new Date());
+        }
+
+        // --- Quiz Data (100 MCQs for Chapter 1: Acellular Life - 1.1, 1.2) ---
+        // Adjusted to exactly 10 Easy, 50 Medium, and 40 Tough questions.
+
+        const allQuestions = [
+            // Easy Questions (10)
+            {
+                id: 1,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "Who was the English scientist who first observed 'cells' in cork?",
+                options: ["Matthias Schleiden", "Theodor Schwann", "Robert Hooke", "Rudolf Virchow"],
+                correctAnswer: "Robert Hooke",
+                solution: "Robert Hooke observed tiny empty spaces in cork and called them 'cells' in 1665."
+            },
+            {
+                id: 2,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "Which of the following is NOT a basic property of life exhibited by a cell?",
+                options: ["Movement", "Respiration", "Photosynthesis", "Reproduction"],
+                correctAnswer: "Photosynthesis",
+                solution: "While some cells perform photosynthesis, it's not a universal basic property of all life forms. Movement, respiration, and reproduction are fundamental."
+            },
+            {
+                id: 3,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "The cell theory states that all organisms are composed of one or more ____.",
+                options: ["tissues", "organs", "cells", "systems"],
+                correctAnswer: "cells",
+                solution: "One of the fundamental tenets of the cell theory is that all organisms are composed of one or more cells."
+            },
+            {
+                id: 4,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "What is the smallest unit and building block of life?",
+                options: ["Molecule", "Atom", "Organelle", "Cell"],
+                correctAnswer: "Cell",
+                solution: "The cell is universally recognized as the basic structural and functional unit of all living organisms."
+            },
+            {
+                id: 5,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "Which of these organisms is single-celled?",
+                options: ["Human", "Amoeba", "Tree", "Bird"],
+                correctAnswer: "Amoeba",
+                solution: "Amoeba is a well-known example of a single-celled organism."
+            },
+            {
+                id: 6,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "The ability of living things to maintain a stable internal environment is called:",
+                options: ["Metabolism", "Homeostasis", "Excretion", "Growth"],
+                correctAnswer: "Homeostasis",
+                solution: "Homeostasis is the process by which living organisms maintain a stable internal environment despite external changes."
+            },
+            {
+                id: 7,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "In 1885, who observed that new cells develop by the division of pre-existing cells?",
+                options: ["Robert Hooke", "Matthias Schleiden", "Theodor Schwann", "Rudolf Virchow"],
+                correctAnswer: "Rudolf Virchow",
+                solution: "Rudolf Virchow famously stated 'Omnis cellula e cellula', meaning 'All cells arise from pre-existing cells'."
+            },
+            {
+                id: 8,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "Which of the following is an exception to the cell theory?",
+                options: ["Bacteria", "Fungi", "Viruses", "Plants"],
+                correctAnswer: "Viruses",
+                solution: "Viruses are considered acellular and only exhibit life properties when inside a host cell, making them an exception to the cell theory."
+            },
+            {
+                id: 9,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "The technique used to view objects that cannot be seen by the naked eye is called:",
+                options: ["Spectroscopy", "Chromatography", "Microscopy", "Electrophoresis"],
+                correctAnswer: "Microscopy",
+                solution: "Microscopy is the science of investigating small objects and structures using a microscope."
+            },
+            {
+                id: 10,
+                type: 'mcq',
+                difficulty: 'easy',
+                question: "What is the maximum magnification of a typical light microscope?",
+                options: ["100X", "500X", "1500X", "5000X"],
+                correctAnswer: "1500X",
+                solution: "A light microscope can typically magnify specimens up to 1500 times."
+            },
+
+            // Medium Questions (50) - Adjusted to be exactly 50
+            {
+                id: 11,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which statement accurately describes the contribution of Theodor Schwann to cell theory?",
+                options: [
+                    "He observed cork cells under a microscope.",
+                    "He concluded that all plants are made of cells.",
+                    "He found that animal cells lack a cell wall and are covered by a membrane, similar to plant cells internally.",
+                    "He stated that all cells arise from pre-existing cells."
+                ],
+                correctAnswer: "He found that animal cells lack a cell wall and are covered by a membrane, similar to plant cells internally.",
+                solution: "Theodor Schwann's work on animal cells complemented Schleiden's work on plant cells, leading to the combined cell theory."
+            },
+            {
+                id: 12,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The resolving power of the naked eye is approximately:",
+                options: ["1 mm", "0.1 mm", "10 µm", "0.1 µm"],
+                correctAnswer: "0.1 mm",
+                solution: "The resolving power of the naked eye is 0.1 mm, meaning it can distinguish between two points that are at least 0.1 mm apart."
+            },
+            {
+                id: 13,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is a validation evidence for the cell theory?",
+                options: [
+                    "Viruses can replicate independently.",
+                    "Nothing smaller than a cell has been found to be able to live independently.",
+                    "Coenocytic hyphae are single-celled organisms.",
+                    "RBCs can divide to form new cells."
+                ],
+                correctAnswer: "Nothing smaller than a cell has been found to be able to live independently.",
+                solution: "The inability of structures smaller than a cell to sustain independent life supports the idea of the cell as the fundamental unit of life."
+            },
+            {
+                id: 14,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "What is the primary difference in the illuminating source between a light microscope and an electron microscope?",
+                options: [
+                    "Light microscope uses UV light, electron microscope uses X-rays.",
+                    "Light microscope uses visible light, electron microscope uses a beam of accelerated electrons.",
+                    "Light microscope uses infrared light, electron microscope uses protons.",
+                    "Light microscope uses lasers, electron microscope uses microwaves."
+                ],
+                correctAnswer: "Light microscope uses visible light, electron microscope uses a beam of accelerated electrons.",
+                solution: "This is the fundamental distinction in their working principles."
+            },
+            {
+                id: 15,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is a characteristic of electron microscopes?",
+                options: [
+                    "They use glass lenses to focus light.",
+                    "They can observe live specimens.",
+                    "They have a resolving power of 250 nm.",
+                    "They produce a black and white image and require vacuum for operation."
+                ],
+                correctAnswer: "They produce a black and white image and require vacuum for operation.",
+                solution: "Electron microscopes operate in a vacuum and produce images based on electron scattering, resulting in black and white visuals."
+            },
+            {
+                id: 16,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The modern iteration of the cell theory includes the concept that genetic information (DNA) is transferred from cell to cell. Which scientist's work laid the foundation for this idea?",
+                options: [
+                    "Robert Hooke",
+                    "Matthias Schleiden",
+                    "Theodor Schwann",
+                    "Rudolf Virchow"
+                ],
+                correctAnswer: "Rudolf Virchow",
+                solution: "Virchow's concept of cells arising from pre-existing cells implies the transfer of cellular components, including genetic material."
+            },
+            {
+                id: 17,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Why are RBCs (Red Blood Cells) considered an exception to the cell theory?",
+                options: [
+                    "They are too small to be considered cells.",
+                    "They lack a nucleus and cannot divide.",
+                    "They do not perform respiration.",
+                    "They are not part of a multicellular organism."
+                ],
+                correctAnswer: "They lack a nucleus and cannot divide.",
+                solution: "Mature mammalian RBCs lack a nucleus, meaning they cannot perform cellular division, which is a key tenet of the cell theory."
+            },
+            {
+                id: 18,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The total magnification of a light microscope is calculated by multiplying the objective lens value by the ____ lens value.",
+                options: ["condenser", "diaphragm", "ocular", "fine adjustment"],
+                correctAnswer: "ocular",
+                solution: "The total magnification is the product of the magnification of the objective lens and the ocular (eyepiece) lens."
+            },
+            {
+                id: 19,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "What is the significance of Francesco Redi's and Louis Pasteur's experiments in validating the cell theory?",
+                options: [
+                    "They proved that cells can spontaneously generate.",
+                    "They demonstrated that cells cannot grow in sealed and sterile conditions, supporting the idea that cells arise from pre-existing cells.",
+                    "They discovered new types of cells.",
+                    "They showed that viruses are living organisms."
+                ],
+                correctAnswer: "They demonstrated that cells cannot grow in sealed and sterile conditions, supporting the idea that cells arise from pre-existing cells.",
+                solution: "Their experiments disproved spontaneous generation and provided strong evidence for biogenesis (life from life)."
+            },
+            {
+                id: 20,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following describes the property of 'Nutrition' in living cells?",
+                options: [
+                    "Removal of waste products.",
+                    "Maintaining a stable internal environment.",
+                    "Exchange of materials and gases with the environment.",
+                    "Producing offspring."
+                ],
+                correctAnswer: "Exchange of materials and gases with the environment.",
+                solution: "Nutrition involves the intake and utilization of food and other substances for growth and energy, which necessitates exchange with the environment."
+            },
+            {
+                id: 21,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Why are protozoans considered 'acellular' rather than 'single-celled' by some biologists?",
+                options: [
+                    "They are too small to have cellular structures.",
+                    "Their body is not divided into distinct cells, functioning as a single, complex unit.",
+                    "They lack genetic material.",
+                    "They are parasitic organisms."
+                ],
+                correctAnswer: "Their body is not divided into distinct cells, functioning as a single, complex unit.",
+                solution: "Protozoans are often described as acellular because their entire body functions as a single, highly organized unit, rather than a collection of simpler cells."
+            },
+            {
+                id: 22,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "An object of 1 µm is observed with a 10X ocular lens and a 40X objective lens. What is the total magnified size of the object?",
+                options: ["40 µm", "100 µm", "400 µm", "4000 µm"],
+                correctAnswer: "400 µm",
+                solution: "Total magnification = Ocular lens magnification × Objective lens magnification = 10X × 40X = 400X. So, 1 µm × 400 = 400 µm."
+            },
+            {
+                id: 23,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The image formed by the objective lens in a light microscope is described as:",
+                options: [
+                    "Virtual, upright, and diminished.",
+                    "Real, inverted, and magnified.",
+                    "Virtual, inverted, and diminished.",
+                    "Real, upright, and magnified."
+                ],
+                correctAnswer: "Real, inverted, and magnified.",
+                solution: "The objective lens produces a real, inverted, and magnified intermediate image."
+            },
+            {
+                id: 24,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is a key difference between magnification and resolution?",
+                options: [
+                    "Magnification increases clarity, resolution increases size.",
+                    "Magnification is the ability to make small objects appear larger, while resolution is the ability to distinguish two close objects.",
+                    "Magnification applies to light microscopes, resolution to electron microscopes.",
+                    "They are two terms for the same concept."
+                ],
+                correctAnswer: "Magnification is the ability to make small objects appear larger, while resolution is the ability to distinguish two close objects.",
+                solution: "Magnification is about size, resolution is about clarity and detail."
+            },
+            {
+                id: 25,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Coenocytic hyphae of fungi like Rhizopus are considered an exception to the cell theory because they are:",
+                options: [
+                    "Single-celled organisms.",
+                    "Multinucleate without being divided into separate cells.",
+                    "Lack a cell wall.",
+                    "Are parasitic."
+                ],
+                correctAnswer: "Multinucleate without being divided into separate cells.",
+                solution: "Coenocytic hyphae contain multiple nuclei within a continuous cytoplasm, lacking distinct cell divisions."
+            },
+            {
+                id: 26,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is a modern concept of the cell theory?",
+                options: [
+                    "Cells are made of tissues.",
+                    "Energy moves through cells.",
+                    "All cells are identical in structure.",
+                    "Cells can spontaneously generate."
+                ],
+                correctAnswer: "Energy moves through cells.",
+                solution: "The modern cell theory includes the concept of energy flow within cells."
+            },
+            {
+                id: 27,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "What is the approximate resolving power of a light microscope?",
+                options: ["0.2 nm", "250 nm", "1 µm", "10 mm"],
+                correctAnswer: "250 nm",
+                solution: "The resolving power of a light microscope is limited to about 250 nanometers, meaning it cannot distinguish objects closer than this distance."
+            },
+            {
+                id: 28,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The electron gun in an electron microscope is responsible for:",
+                options: [
+                    "Focusing the electron beam.",
+                    "Producing the beam of accelerated electrons.",
+                    "Holding the specimen.",
+                    "Magnifying the image."
+                ],
+                correctAnswer: "Producing the beam of accelerated electrons.",
+                solution: "The electron gun generates the high-energy electron beam used for imaging."
+            },
+            {
+                id: 29,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is true regarding the specimen in electron microscopy?",
+                options: [
+                    "It must be alive.",
+                    "It is typically a thick section.",
+                    "It must be a thin section (20-100 nm) and dried.",
+                    "It is illuminated by visible light."
+                ],
+                correctAnswer: "It must be a thin section (20-100 nm) and dried.",
+                solution: "Electron beams cannot penetrate thick specimens, and the vacuum environment requires dried samples."
+            },
+            {
+                id: 30,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The image produced by a light microscope is typically ____ with respect to the object.",
+                options: ["upright", "inverted", "magnified only", "diminished only"],
+                correctAnswer: "inverted",
+                solution: "Due to the two-lens system, the final image in a compound light microscope is inverted."
+            },
+            {
+                id: 31,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "What did Robert Hooke actually see when he observed 'cells' in cork?",
+                options: [
+                    "Living plant cells with organelles.",
+                    "The thick, outside walls of what was once part of the cork tree.",
+                    "Bacteria and other microorganisms.",
+                    "Animal cells in a monastery."
+                ],
+                correctAnswer: "The thick, outside walls of what was once part of the cork tree.",
+                solution: "Hooke observed the dead cell walls, which resembled small rooms or 'cells'."
+            },
+            {
+                id: 32,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which property of life is described as 'Living things use substances from the environment to make energy'?",
+                options: ["Growth", "Excretion", "Respiration", "Movement"],
+                correctAnswer: "Respiration",
+                solution: "Respiration is the process of converting nutrients into energy."
+            },
+            {
+                id: 33,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The experimental evidence by Redi and Pasteur demonstrated that:",
+                options: [
+                    "Cells can arise from non-living matter under specific conditions.",
+                    "Cells cannot grow in sealed and sterile conditions.",
+                    "Microscopes are essential for discovering new life forms.",
+                    "All cells share the same chemical makeup."
+                ],
+                correctAnswer: "Cells cannot grow in sealed and sterile conditions.",
+                solution: "Their experiments refuted the theory of spontaneous generation, showing that life (cells) comes from pre-existing life."
+            },
+            {
+                id: 34,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is NOT a modern concept of the cell theory?",
+                options: [
+                    "Energy moves through cells.",
+                    "DNA is transferred from cell to cell.",
+                    "All cells are identical in structure.",
+                    "Cells are the only units capable of independent life."
+                ],
+                correctAnswer: "Cells are the only units capable of independent life.",
+                solution: "While cells are the fundamental unit of life, the statement 'only units capable of independent life' is too strong and not one of the specific modern tenets listed in the text."
+            },
+            {
+                id: 35,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "If a microscope can clearly distinguish between two points that are close together, it has a good or high ____.",
+                options: ["magnification", "contrast", "resolution", "illumination"],
+                correctAnswer: "resolution",
+                solution: "Resolution is the ability to distinguish between two separate points."
+            },
+            {
+                id: 36,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The process by which living things produce offspring, either sexually or asexually, is called:",
+                options: ["Growth", "Excretion", "Reproduction", "Homeostasis"],
+                correctAnswer: "Reproduction",
+                solution: "Reproduction is the biological process by which new individual organisms – 'offspring' – are produced from their 'parents'."
+            },
+            {
+                id: 37,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Why are bacteria and cyanobacteria considered exceptions to the cell theory by some?",
+                options: [
+                    "They are multicellular.",
+                    "They lack a well-organized nucleus with a nuclear membrane.",
+                    "They cannot perform respiration.",
+                    "They are too large to be single cells."
+                ],
+                correctAnswer: "They lack a well-organized nucleus with a nuclear membrane.",
+                solution: "Prokaryotes (like bacteria and cyanobacteria) have a nucleoid region instead of a membrane-bound nucleus, differing from the typical eukaryotic cell structure implied by early cell theory."
+            },
+            {
+                id: 38,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The term 'magnification' refers to the capacity of an optical instrument to:",
+                options: [
+                    "Distinguish between two close points.",
+                    "Increase the size of an object than its original size.",
+                    "Illuminate the specimen.",
+                    "Filter out unwanted light."
+                ],
+                correctAnswer: "Increase the size of an object than its original size.",
+                solution: "Magnification is literally the act of making something look larger than it is."
+            },
+            {
+                id: 39,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which component of a light microscope is responsible for focusing the light onto the specimen?",
+                options: ["Ocular lens", "Objective lens", "Condenser lens", "Nosepiece"],
+                correctAnswer: "Condenser lens",
+                solution: "The condenser lens gathers and focuses light from the illuminator onto the specimen."
+            },
+            {
+                id: 40,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The statement 'All cells share the same primary chemical makeup' is part of the modern cell theory. This implies a fundamental similarity in their:",
+                options: [
+                    "Size and shape.",
+                    "Organelle composition.",
+                    "Molecular building blocks and processes.",
+                    "Reproductive strategies."
+                ],
+                correctAnswer: "Molecular building blocks and processes.",
+                solution: "Sharing the same primary chemical makeup means they are built from similar molecules and use similar biochemical pathways."
+            },
+            {
+                id: 41,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "What is the primary reason why electron microscopes have much higher resolution than light microscopes?",
+                options: [
+                    "They use stronger lenses.",
+                    "They use electrons which have much shorter wavelengths than visible light.",
+                    "They can magnify up to 50 million times.",
+                    "They operate in a vacuum."
+                ],
+                correctAnswer: "They use electrons which have much shorter wavelengths than visible light.",
+                solution: "Resolution is inversely proportional to the wavelength of the illuminating source. Electrons have extremely short wavelengths."
+            },
+            {
+                id: 42,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The property of 'Excretion' in living organisms refers to:",
+                options: [
+                    "The intake of nutrients.",
+                    "The removal of waste products.",
+                    "The ability to move.",
+                    "The process of energy production."
+                ],
+                correctAnswer: "The removal of waste products.",
+                solution: "Excretion is the process of eliminating metabolic waste from the body."
+            },
+            {
+                id: 43,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is a characteristic of a compound light microscope?",
+                options: [
+                    "Uses electron beams.",
+                    "Produces black and white images.",
+                    "Uses two lenses (ocular and objective).",
+                    "Requires a vacuum for operation."
+                ],
+                correctAnswer: "Uses two lenses (ocular and objective).",
+                solution: "A compound microscope uses multiple lenses to achieve higher magnification."
+            },
+            {
+                id: 44,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The 'Stage' of a light microscope is where the:",
+                options: [
+                    "Light source is located.",
+                    "Eyepiece is attached.",
+                    "Specimen is placed for viewing.",
+                    "Magnification is adjusted."
+                ],
+                correctAnswer: "Specimen is placed for viewing.",
+                solution: "The stage is the flat platform where the slide with the specimen is placed."
+            },
+            {
+                id: 45,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of these is a multicellular organism?",
+                options: ["Paramecium", "Euglena", "Plant", "Virus"],
+                correctAnswer: "Plant",
+                solution: "Plants are complex organisms composed of many cells."
+            },
+            {
+                id: 46,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The statement 'Cells removed from tissues can survive independently for short periods of time' validates cell theory by showing:",
+                options: [
+                    "Cells are highly specialized.",
+                    "Cells are the basic units of life.",
+                    "Cells require a host to survive.",
+                    "Cells can spontaneously generate."
+                ],
+                correctAnswer: "Cells are the basic units of life.",
+                solution: "This demonstrates the intrinsic capacity of cells to carry out life processes, even when isolated."
+            },
+            {
+                id: 47,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "What is the primary function of the objective lens in a light microscope?",
+                options: [
+                    "To illuminate the specimen.",
+                    "To provide the final magnified image.",
+                    "To form the first, real, inverted, and magnified image of the object.",
+                    "To adjust the focus coarsely."
+                ],
+                correctAnswer: "To form the first, real, inverted, and magnified image of the object.",
+                solution: "The objective lens is closest to the specimen and performs the initial magnification."
+            },
+            {
+                id: 48,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Viroids and prions are considered exceptions to the cell theory because they:",
+                options: [
+                    "Are complex multicellular structures.",
+                    "Are smaller than cells and lack cellular machinery, behaving like viruses.",
+                    "Can only be seen with a light microscope.",
+                    "Are responsible for maintaining homeostasis."
+                ],
+                correctAnswer: "Are smaller than cells and lack cellular machinery, behaving like viruses.",
+                solution: "Like viruses, they are non-cellular infectious agents."
+            },
+            {
+                id: 49,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The principle of electron microscopy relies on the fact that denser regions of a specimen ____ more electrons on the screen.",
+                options: ["absorb", "transmit", "scatter", "refract"],
+                correctAnswer: "scatter",
+                solution: "The differential scattering of electrons by denser and lighter regions creates the image contrast."
+            },
+            {
+                id: 50,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is a property of life where living things can move and change shape or size?",
+                options: ["Respiration", "Growth", "Excretion", "Nutrition"],
+                correctAnswer: "Growth",
+                solution: "Growth involves an increase in size and complexity."
+            },
+            {
+                id: 51,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The term 'acellular' when applied to viruses means they:",
+                options: [
+                    "Are composed of a single cell.",
+                    "Lack cellular machinery and are not true cells.",
+                    "Can only reproduce sexually.",
+                    "Are always dead."
+                ],
+                correctAnswer: "Lack cellular machinery and are not true cells.",
+                solution: "Viruses are not made of cells and lack the organelles necessary for independent metabolic processes."
+            },
+            {
+                id: 52,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "What is the purpose of the accelerating potential in an electron microscope?",
+                options: [
+                    "To heat the specimen.",
+                    "To cool the electron gun.",
+                    "To move the electrons downwards towards the specimen.",
+                    "To magnify the image."
+                ],
+                correctAnswer: "To move the electrons downwards towards the specimen.",
+                solution: "The accelerating potential creates an electric field that propels the electrons."
+            },
+            {
+                id: 53,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The final image produced by a light microscope is described as:",
+                options: [
+                    "Real and diminished.",
+                    "Virtual and upright.",
+                    "Virtual and magnified.",
+                    "Real and magnified."
+                ],
+                correctAnswer: "Virtual and magnified.",
+                solution: "The eyepiece produces a virtual, magnified image that the observer sees."
+            },
+            {
+                id: 54,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "If a light microscope uses a 10X ocular lens, what objective lens would be needed to achieve a total magnification of 1000X?",
+                options: ["10X", "40X", "100X", "200X"],
+                correctAnswer: "100X",
+                solution: "Total magnification = Ocular x Objective. So, 1000X = 10X * Objective, which means Objective = 100X."
+            },
+            {
+                id: 55,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is a correct pairing of a scientist and their contribution to cell theory?",
+                options: [
+                    "Robert Hooke - All cells arise from pre-existing cells.",
+                    "Matthias Schleiden - All animals are made of cells.",
+                    "Theodor Schwann - All plants are made of cells.",
+                    "Rudolf Virchow - New cells develop by the division of pre-existing cells."
+                ],
+                correctAnswer: "Rudolf Virchow - New cells develop by the division of pre-existing cells.",
+                solution: "This is Virchow's key contribution."
+            },
+            {
+                id: 56,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The term 'compound microscope' is used for light microscopes because:",
+                options: [
+                    "They are very complex to operate.",
+                    "They use multiple light sources.",
+                    "They use two lenses (ocular and objective) to magnify.",
+                    "They can view compounds."
+                ],
+                correctAnswer: "They use two lenses (ocular and objective) to magnify.",
+                solution: "The 'compound' refers to the combination of multiple lenses."
+            },
+            {
+                id: 57,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following is a limitation of light microscopes compared to electron microscopes?",
+                options: [
+                    "Higher cost.",
+                    "Lower magnification and resolution.",
+                    "Inability to view live specimens.",
+                    "Only produces black and white images."
+                ],
+                correctAnswer: "Lower magnification and resolution.",
+                solution: "Light microscopes are limited by the wavelength of visible light, restricting their resolution and maximum useful magnification."
+            },
+            {
+                id: 58,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The 'Body tube' of a light microscope connects the:",
+                options: [
+                    "Light source to the stage.",
+                    "Eyepiece to the objective lenses.",
+                    "Fine adjustment knob to the stage.",
+                    "Diaphragm to the condenser."
+                ],
+                correctAnswer: "Eyepiece to the objective lenses.",
+                solution: "The body tube houses the optical components and maintains the correct distance between them."
+            },
+            {
+                id: 59,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "Which of the following describes the property of 'Movement' in living things?",
+                options: [
+                    "Using substances to make energy.",
+                    "Maintaining a stable internal environment.",
+                    "Showing movement either externally or internally.",
+                    "Producing offspring."
+                ],
+                correctAnswer: "Showing movement either externally or internally.",
+                solution: "Movement is a fundamental characteristic of life, from cellular processes to locomotion."
+            },
+            {
+                id: 60,
+                type: 'mcq',
+                difficulty: 'medium',
+                question: "The 'Diaphragm' in a light microscope controls the:",
+                options: [
+                    "Focus of the image.",
+                    "Total magnification.",
+                    "Amount of light reaching the specimen.",
+                    "Movement of the stage."
+                ],
+                correctAnswer: "Amount of light reaching the specimen.",
+                solution: "The diaphragm adjusts the aperture to control the light intensity and contrast."
+            },
+
+            // Tough Questions (40) - Adjusted to be exactly 40
+            {
+                id: 61, // Renumbered from 101 for continuity and correct count
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "While both light and electron microscopes use lenses, the fundamental difference in their 'lenses' is that electron microscopes use:",
+                options: [
+                    "Glass lenses to focus electrons.",
+                    "Electromagnetic lenses to focus light.",
+                    "Electromagnetic lenses to focus electrons.",
+                    "Acoustic lenses to focus sound waves."
+                ],
+                correctAnswer: "Electromagnetic lenses to focus electrons.",
+                solution: "Electron microscopes utilize magnetic fields to bend and focus electron beams, acting as lenses."
+            },
+            {
+                id: 62, // Renumbered from 102
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The 'honeycomb' appearance observed by Robert Hooke in cork cells was actually the:",
+                options: [
+                    "Living cytoplasm of the cells.",
+                    "Nuclei of the cells.",
+                    "Thick, rigid cell walls of dead plant cells.",
+                    "Mitochondria within the cells."
+                ],
+                correctAnswer: "Thick, rigid cell walls of dead plant cells.",
+                solution: "Hooke was observing the remnants of dead plant cells, specifically their cell walls."
+            },
+            {
+                id: 63, // Renumbered from 103
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The statement 'All cells share the same primary chemical makeup' is crucial because it implies a universal basis for:",
+                options: [
+                    "Cellular diversity.",
+                    "Evolutionary divergence.",
+                    "Biochemical pathways and genetic coding across all life forms.",
+                    "The ability to form tissues."
+                ],
+                correctAnswer: "Biochemical pathways and genetic coding across all life forms.",
+                solution: "This tenet highlights the fundamental unity of life at the molecular level."
+            },
+            {
+                id: 64, // Renumbered from 104
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "If a new organism is discovered that can live and reproduce without any cellular structure, it would primarily challenge which tenet of the cell theory?",
+                options: [
+                    "All organisms are composed of one or more cells.",
+                    "Cells arise from pre-existing cells.",
+                    "Energy moves through cells.",
+                    "DNA is transferred from cell to cell."
+                ],
+                correctAnswer: "All organisms are composed of one or more cells.",
+                solution: "This discovery would directly contradict the foundational idea that cells are the basic unit of all life."
+            },
+            {
+                id: 65, // Renumbered from 105
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The experiment by Louis Pasteur, involving swan-neck flasks, was instrumental in disproving:",
+                options: [
+                    "The existence of cells.",
+                    "The theory of evolution.",
+                    "Spontaneous generation of life from non-living matter.",
+                    "The role of DNA in inheritance."
+                ],
+                correctAnswer: "Spontaneous generation of life from non-living matter.",
+                solution: "Pasteur's experiment showed that microorganisms only grew in broth exposed to pre-existing microbes, not spontaneously."
+            },
+            {
+                id: 66, // Renumbered from 106
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Which of the following is the most accurate reason why viruses are considered 'acellular' and an exception to the cell theory?",
+                options: [
+                    "They are too small to be seen with any microscope.",
+                    "They lack a nucleus and organelles, and cannot carry out metabolism independently.",
+                    "They only infect plant cells.",
+                    "They reproduce only through budding."
+                ],
+                correctAnswer: "They lack a nucleus and organelles, and cannot carry out metabolism independently.",
+                solution: "The key is their lack of independent metabolic machinery and reliance on host cells."
+            },
+            {
+                id: 67, // Renumbered from 107
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The resolving power of a microscope is determined by the wavelength of the illumination source and the numerical aperture of the lens. Given this, why does an electron microscope have superior resolution?",
+                options: [
+                    "It has larger lenses.",
+                    "It uses a higher intensity light source.",
+                    "Electrons have much shorter wavelengths than visible light.",
+                    "It operates at lower temperatures."
+                ],
+                correctAnswer: "Electrons have much shorter wavelengths than visible light.",
+                solution: "Shorter wavelengths allow for the distinction of finer details."
+            },
+            {
+                id: 68, // Renumbered from 108
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "If a cell is observed to be performing all seven basic properties of life (Movement, Respiration, Homeostasis, Growth, Reproduction, Excretion, and Nutrition), what does this primarily indicate about the cell?",
+                options: [
+                    "It is a prokaryotic cell.",
+                    "It is a highly specialized cell.",
+                    "It is a complete, self-sustaining unit of life.",
+                    "It must be a multicellular organism."
+                ],
+                correctAnswer: "It is a complete, self-sustaining unit of life.",
+                solution: "Performing all life functions signifies its fundamental role as a living entity."
+            },
+            {
+                id: 69, // Renumbered from 109
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The formulation of the cell theory involved the combined insights of Schleiden and Schwann. What was the crucial aspect of their collaboration?",
+                options: [
+                    "They both observed cork cells.",
+                    "Schleiden studied plants and Schwann studied animals, and they found common cellular principles.",
+                    "They both disproved spontaneous generation.",
+                    "They discovered the nucleus."
+                ],
+                correctAnswer: "Schleiden studied plants and Schwann studied animals, and they found common cellular principles.",
+                solution: "Their independent observations on different kingdoms of life converged on the universal concept of the cell."
+            },
+            {
+                id: 70, // Renumbered from 110
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Which of the following scenarios would NOT be considered a validation of the cell theory?",
+                options: [
+                    "Observing a single bacterium dividing to form two new bacteria.",
+                    "Finding that a complex organism's tissues are composed of individual cells.",
+                    "Discovering a new chemical reaction that produces organic molecules from inorganic ones.",
+                    "Demonstrating that isolated cells can metabolize nutrients."
+                ],
+                correctAnswer: "Discovering a new chemical reaction that produces organic molecules from inorganic ones.",
+                solution: "This relates to abiogenesis (origin of life), not the principle that cells arise from pre-existing cells."
+            },
+            {
+                id: 71, // Renumbered from 111
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Consider the image of cork cells by Robert Hooke (Fig. 1.1 in the PDF). What feature of these 'cells' was most significant for his naming convention?",
+                options: [
+                    "Their living contents.",
+                    "Their ability to reproduce.",
+                    "Their empty, box-like appearance with walls.",
+                    "Their vibrant color."
+                ],
+                correctAnswer: "Their empty, box-like appearance with walls.",
+                solution: "He likened them to small rooms or 'cells' in a monastery due to their partitioned, empty nature."
+            },
+            {
+                id: 72, // Renumbered from 112
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The concept that 'Energy moves through cells' as part of the modern cell theory emphasizes the cell as a site of:",
+                options: [
+                    "Structural rigidity.",
+                    "Genetic storage.",
+                    "Dynamic metabolic activity and energy transformation.",
+                    "Passive transport only."
+                ],
+                correctAnswer: "Dynamic metabolic activity and energy transformation.",
+                solution: "Cells are constantly processing energy to perform their functions."
+            },
+            {
+                id: 73, // Renumbered from 113
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "If a new type of organism is found that lacks a true nucleus but has its genetic material organized in a distinct region within the cytoplasm, it would be classified similarly to:",
+                options: [
+                    "Eukaryotic cells.",
+                    "Viruses.",
+                    "Prokaryotic cells.",
+                    "Multicellular organisms."
+                ],
+                correctAnswer: "Prokaryotic cells.",
+                solution: "This description matches the definition of prokaryotic cells, which are exceptions to the strict definition of a 'well-organized nucleus' in early cell theory."
+            },
+            {
+                id: 74, // Renumbered from 114
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The primary reason for the black and white images produced by electron microscopes is that:",
+                options: [
+                    "Electrons do not have color properties.",
+                    "The specimens are stained with black dyes.",
+                    "Image formation is based on electron scattering, not light absorption/reflection.",
+                    "The camera used is monochrome."
+                ],
+                correctAnswer: "Image formation is based on electron scattering, not light absorption/reflection.",
+                solution: "Color is a property of visible light, which is not used in electron microscopy. Image contrast is derived from electron interactions with the specimen."
+            },
+            {
+                id: 75, // Renumbered from 115
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Why is it crucial for specimens in electron microscopy to be extremely thin?",
+                options: [
+                    "To prevent them from drying out.",
+                    "To allow electrons to pass through them without excessive scattering or absorption.",
+                    "To ensure they fit on the specimen holder.",
+                    "To reduce the magnification required."
+                ],
+                correctAnswer: "To allow electrons to pass through them without excessive scattering or absorption.",
+                solution: "Electron beams have limited penetration power, so thin sections are essential for clear imaging."
+            },
+            {
+                id: 76, // Renumbered from 116
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The discovery of sub-cellular organelles was made possible primarily due to the invention and advancement of:",
+                options: [
+                    "Light microscopy.",
+                    "Electron microscopy.",
+                    "X-ray crystallography.",
+                    "Centrifugation techniques."
+                ],
+                correctAnswer: "Electron microscopy.",
+                solution: "The higher resolution of electron microscopes was necessary to visualize the intricate details of organelles."
+            },
+            {
+                id: 77, // Renumbered from 117
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "If an organism is described as 'multinucleate' without clear cell divisions, like the alga Vaucheria or fungal hyphae, it challenges which part of the cell theory?",
+                options: [
+                    "Cells are the basic unit of life.",
+                    "All organisms are composed of one or more cells.",
+                    "Cells arise from pre-existing cells.",
+                    "The idea of distinct cellular boundaries."
+                ],
+                correctAnswer: "The idea of distinct cellular boundaries.",
+                solution: "While they are still composed of cellular material, the lack of distinct cell walls/membranes between nuclei makes them an exception to the typical cellular structure."
+            },
+            {
+                id: 78, // Renumbered from 118
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The statement 'DNA is transferred from cell to cell, carrying genetic information' is a key aspect of the modern cell theory. This explains the continuity of life through:",
+                options: [
+                    "Homeostasis.",
+                    "Evolution.",
+                    "Inheritance and reproduction.",
+                    "Metabolism."
+                ],
+                correctAnswer: "Inheritance and reproduction.",
+                solution: "DNA carries the genetic instructions for building and operating an organism, passed down through generations."
+            },
+            {
+                id: 79, // Renumbered from 119
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Which of the following is an example of an experimental evidence that validates the cell theory by showing cells cannot grow in sealed and sterile conditions?",
+                options: [
+                    "Observing bacteria growing in an open flask of broth.",
+                    "Heating a broth to kill all microorganisms and then observing no growth in a sealed flask.",
+                    "Identifying new organelles within a cell.",
+                    "Measuring the rate of respiration in a single cell."
+                ],
+                correctAnswer: "Heating a broth to kill all microorganisms and then observing no growth in a sealed flask.",
+                solution: "This directly supports the idea that life (cells) must come from pre-existing life, not spontaneous generation."
+            },
+            {
+                id: 80, // Renumbered from 120
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The concept of 'resolution' in microscopy is fundamentally limited by the ____ of the illuminating radiation.",
+                options: [
+                    "Intensity.",
+                    "Frequency.",
+                    "Wavelength.",
+                    "Speed."
+                ],
+                correctAnswer: "Wavelength.",
+                solution: "The shorter the wavelength, the higher the achievable resolution."
+            },
+            {
+                id: 81, // Renumbered from 121
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Why are mature mammalian Red Blood Cells (RBCs) considered an exception to the cell theory, specifically regarding the tenet 'Cells arise from pre-existing cells through cellular division'?",
+                options: [
+                    "They are formed from non-cellular components.",
+                    "They lose their nucleus during maturation and thus cannot divide.",
+                    "They are too specialized to divide.",
+                    "They are not considered true cells."
+                ],
+                correctAnswer: "They lose their nucleus during maturation and thus cannot divide.",
+                solution: "Without a nucleus, they lack the genetic machinery for division and are terminally differentiated."
+            },
+            {
+                id: 82, // Renumbered from 122
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The 'electron gun' in an electron microscope uses a heated filament to produce electrons. This process is analogous to the ____ in a light microscope.",
+                options: [
+                    "Eyepiece.",
+                    "Objective lens.",
+                    "Light source.",
+                    "Stage."
+                ],
+                correctAnswer: "Light source.",
+                solution: "Both are the sources of the illuminating medium (electrons or light)."
+            },
+            {
+                id: 83, // Renumbered from 123
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "If a scientist observes a new microscopic entity that can perform all seven properties of life but lacks a distinct cell membrane or internal organelles, it would most directly challenge the idea that cells are the:",
+                options: [
+                    "Smallest living units.",
+                    "Units with defined boundaries and internal structures.",
+                    "Only units capable of reproduction.",
+                    "Only units that exchange gases."
+                ],
+                correctAnswer: "Units with defined boundaries and internal structures.",
+                solution: "This challenges the structural definition of a cell as having distinct boundaries and compartmentalization."
+            },
+            {
+                id: 84, // Renumbered from 124
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The 'Condenser lens' system in an electron microscope plays a role similar to the condenser in a light microscope, which is to:",
+                options: [
+                    "Magnify the image.",
+                    "Focus the illuminating beam onto the specimen.",
+                    "Collect the scattered electrons.",
+                    "Control the vacuum."
+                ],
+                correctAnswer: "Focus the illuminating beam onto the specimen.",
+                solution: "Both condenser systems control the illumination of the specimen."
+            },
+            {
+                id: 85,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Which of the following is the most significant implication of the modern cell theory stating that 'Energy moves through cells'?",
+                options: [
+                    "Cells are static structures.",
+                    "Cells are capable of complex biochemical reactions to sustain life.",
+                    "Cells only store energy, they don't produce it.",
+                    "Energy is only transferred between organisms, not within cells."
+                ],
+                correctAnswer: "Cells are capable of complex biochemical reactions to sustain life.",
+                solution: "Energy flow is synonymous with metabolism, which is essential for all cellular activities."
+            },
+            {
+                id: 86,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The 'objective lens' in an electron microscope is responsible for forming the first magnified image. This is analogous to the role of the ____ in a light microscope.",
+                options: ["Ocular lens", "Condenser lens", "Objective lens", "Eyepiece"],
+                correctAnswer: "Objective lens",
+                solution: "Both objective lenses are responsible for the initial magnification of the specimen."
+            },
+            {
+                id: 87,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The historical progression of cell theory, from Hooke's observations to Virchow's tenet, highlights a shift from focusing on cells as ____ to cells as ____.",
+                options: [
+                    "empty boxes; living entities capable of division.",
+                    "animal structures; plant structures.",
+                    "fixed units; fluid structures.",
+                    "microscopic curiosities; macroscopic organisms."
+                ],
+                correctAnswer: "empty boxes; living entities capable of division.",
+                solution: "Early observations focused on structure, while later contributions emphasized the dynamic and reproductive nature of cells."
+            },
+            {
+                id: 88,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "If a new infectious agent is discovered that consists solely of a misfolded protein and can cause disease by inducing other proteins to misfold, it would be classified as a:",
+                options: [
+                    "Virus.",
+                    "Bacterium.",
+                    "Prion.",
+                    "Viroid."
+                ],
+                correctAnswer: "Prion.",
+                solution: "Prions are infectious proteins that cause neurodegenerative diseases by inducing abnormal folding of normal cellular proteins."
+            },
+            {
+                id: 89,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The fact that 'All cells share the same primary chemical makeup' is a powerful concept for understanding:",
+                options: [
+                    "The diversity of life forms.",
+                    "The common ancestry and fundamental unity of all life.",
+                    "The differences between prokaryotes and eukaryotes.",
+                    "The specialized functions of different cell types."
+                ],
+                correctAnswer: "The common ancestry and fundamental unity of all life.",
+                solution: "This suggests a shared evolutionary history and common biochemical machinery."
+            },
+            {
+                id: 90,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "In electron microscopy, the 'Specimen' must be kept as a thin section of 20-100 nm. This is critical for:",
+                options: [
+                    "Preventing image distortion.",
+                    "Allowing the electron beam to penetrate and form an image.",
+                    "Maintaining the specimen's viability.",
+                    "Reducing the need for high magnification."
+                ],
+                correctAnswer: "Allowing the electron beam to penetrate and form an image.",
+                solution: "Electron beams have limited penetration, so thin sections are essential for clear imaging."
+            },
+            {
+                id: 91,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Which of the following is a direct consequence of the higher resolution of electron microscopes compared to light microscopes?",
+                options: [
+                    "Ability to view live cells in their natural state.",
+                    "Observation of atomic structures.",
+                    "Detailed visualization of sub-cellular organelles and macromolecules.",
+                    "Simpler specimen preparation."
+                ],
+                correctAnswer: "Detailed visualization of sub-cellular organelles and macromolecules.",
+                solution: "Higher resolution allows for seeing much finer details within cells."
+            },
+            {
+                id: 92,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The 'image formed by the objective functions as the object for eyepiece' in a light microscope. This serial magnification leads to a final image that is:",
+                options: [
+                    "Real and upright.",
+                    "Virtual and inverted.",
+                    "Real and magnified.",
+                    "Virtual and upright."
+                ],
+                correctAnswer: "Virtual and inverted.",
+                solution: "The eyepiece further magnifies the inverted real image from the objective, resulting in a larger, still inverted, virtual image."
+            },
+            {
+                id: 93,
+                type: 'drag-drop',
+                difficulty: 'tough',
+                question: "Arrange the following scientists in chronological order of their key contributions to the cell theory:",
+                items: [
+                    { id: 'hooke', text: 'Robert Hooke (coined "cell")' },
+                    { id: 'schleiden', text: 'Matthias Schleiden (all plants made of cells)' },
+                    { id: 'schwann', text: 'Theodor Schwann (all animals made of cells)' },
+                    { id: 'virchow', text: 'Rudolf Virchow (cells from pre-existing cells)' }
+                ],
+                correctOrder: ['hooke', 'schleiden', 'schwann', 'virchow'],
+                solution: "The correct chronological order is: Robert Hooke (1665), Matthias Schleiden (1838), Theodor Schwann (1839), and Rudolf Virchow (1855)."
+            },
+            {
+                id: 94,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The concept of 'DNA is transferred from cell to cell, carrying genetic information' implies that cells have a mechanism for:",
+                options: [
+                    "Energy synthesis.",
+                    "Waste removal.",
+                    "Accurate replication and transmission of hereditary material.",
+                    "Maintaining internal stability."
+                ],
+                correctAnswer: "Accurate replication and transmission of hereditary material.",
+                solution: "This is fundamental to how life perpetuates itself and how traits are inherited."
+            },
+            {
+                id: 95,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "Which of the following is a crucial aspect of the 'Homeostasis' property of life?",
+                options: [
+                    "Irreversible growth.",
+                    "Active regulation of internal conditions despite external changes.",
+                    "Passive movement of substances.",
+                    "Random production of offspring."
+                ],
+                correctAnswer: "Active regulation of internal conditions despite external changes.",
+                solution: "Homeostasis involves active physiological processes to maintain stability."
+            },
+            {
+                id: 96,
+                type: 'image-mcq',
+                difficulty: 'tough',
+                question: "Observe the image below (similar to Fig. 1.2 in your textbook, a diagram of a light microscope). Which labeled part corresponds to the 'Ocular lens'?",
+                imageUrl: "https://placehold.co/400x300/6D6875/FFFFFF?text=Light%20Microscope%20Diagram",
+                imageCaption: "A placeholder image representing a light microscope diagram with various parts labeled (e.g., eyepiece, objective, stage, light source).",
+                options: [
+                    "The part labeled 'A' at the base.",
+                    "The part labeled 'B' which is the rotating part holding multiple lenses.",
+                    "The part labeled 'C' where the observer looks into.",
+                    "The part labeled 'D' where the specimen is placed."
+                ],
+                correctAnswer: "The part labeled 'C' where the observer looks into.",
+                solution: "The ocular lens, or eyepiece, is the lens closest to the observer's eye."
+            },
+            {
+                id: 97,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The primary function of the 'Anode' in an electron microscope is to:",
+                options: [
+                    "Generate the electron beam.",
+                    "Focus the electron beam.",
+                    "Accelerate the electrons towards the specimen.",
+                    "Detect the scattered electrons."
+                ],
+                correctAnswer: "Accelerate the electrons towards the specimen.",
+                solution: "The anode's positive charge pulls the emitted electrons, giving them high kinetic energy."
+            },
+            {
+                id: 98,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The concept of 'Energy moves through cells' is fundamental to understanding cellular processes such as:",
+                options: [
+                    "Cellular rigidity.",
+                    "Genetic mutation.",
+                    "Metabolism and ATP production.",
+                    "Passive diffusion."
+                ],
+                correctAnswer: "Metabolism and ATP production.",
+                solution: "Energy flow is central to how cells acquire, convert, and use energy for life."
+            },
+            {
+                id: 99,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "If a new single-celled organism is discovered that replicates by simply growing larger and then splitting into two identical halves, this observation strongly supports which tenet of the cell theory?",
+                options: [
+                    "All organisms are composed of one or more cells.",
+                    "Cells arise from pre-existing cells through cellular division.",
+                    "Energy moves through cells.",
+                    "All cells share the same primary chemical makeup."
+                ],
+                correctAnswer: "Cells arise from pre-existing cells through cellular division.",
+                solution: "This is a direct observation of cell division from a pre-existing cell."
+            },
+            {
+                id: 100,
+                type: 'mcq',
+                difficulty: 'tough',
+                question: "The distinction between 'live vs dead tissue' is particularly relevant when comparing light and electron microscopy because:",
+                options: [
+                    "Light microscopes can only view dead tissue.",
+                    "Electron microscopes can view both live and dead tissue.",
+                    "Electron microscopy requires a vacuum, which is incompatible with live specimens.",
+                    "Light microscopes provide higher resolution for live tissue."
+                ],
+                correctAnswer: "Electron microscopy requires a vacuum, which is incompatible with live specimens.",
+                solution: "The harsh conditions inside an electron microscope mean only dead, prepared specimens can be observed."
+            }
+        ];
+
+        // Function to create questions with difficulty distribution
+        function createQuizQuestions() {
+            const easyQs = allQuestions.filter(q => q.difficulty === 'easy');
+            const mediumQs = allQuestions.filter(q => q.difficulty === 'medium');
+            const toughQs = allQuestions.filter(q => q.difficulty === 'tough');
+
+            let selectedQuestions = [];
+
+            // Select 10 easy questions (shuffled from easy pool)
+            selectedQuestions = selectedQuestions.concat(shuffleArray(easyQs).slice(0, 10));
+            // Select 50 medium questions (shuffled from medium pool)
+            selectedQuestions = selectedQuestions.concat(shuffleArray(mediumQs).slice(0, 50));
+            // Select 40 tough questions (shuffled from tough pool)
+            selectedQuestions = selectedQuestions.concat(shuffleArray(toughQs).slice(0, 40));
+
+            // Ensure exactly 100 questions (this check now primarily for debugging if allQuestions array is misconfigured)
+            if (selectedQuestions.length !== 100) {
+                console.error(`Error: Quiz question count is not 100. Found ${selectedQuestions.length}. Adjusting selection.`);
+                // Fallback to just shuffling all available questions if counts are off
+                selectedQuestions = shuffleArray(allQuestions).slice(0, 100);
+            }
+
+            // Shuffle the entire set of selected questions only once for the initial quiz order
+            quizQuestions = shuffleArray(selectedQuestions);
+
+            // Select one "Today's Special Question" if the date matches
+            const today = getTodayDateString();
+            if (today === QUIZ_DATE) {
+                const specialQIndex = Math.floor(Math.random() * quizQuestions.length);
+                quizQuestions[specialQIndex].isSpecial = true;
+            }
+
+            // Initialize 'answered' status for all questions
+            quizQuestions.forEach(q => q.answered = false);
+
+            // Store original order for 24-hour check
+            originalQuestionOrder = quizQuestions.map(q => q.id);
+            localStorage.setItem('lastQuizOrder', JSON.stringify(originalQuestionOrder));
+            localStorage.setItem('lastQuizTakenDate', today);
+        }
+
+        // --- Login and Name Entry Logic ---
+        document.getElementById('login-button').addEventListener('click', () => {
+            const id = document.getElementById('login-id').value;
+            const password = document.getElementById('login-password').value;
+            const loginError = document.getElementById('login-error');
+
+            if (id === LOGIN_ID && password === LOGIN_PASSWORD) {
+                loginError.classList.add('hidden');
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('name-entry-screen').style.display = 'flex';
+            } else {
+                loginError.classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('start-quiz-button').addEventListener('click', () => {
+            candidateFullName = document.getElementById('candidate-name').value.trim();
+            if (candidateFullName) {
+                const today = getTodayDateString();
+                const lastTakenDate = localStorage.getItem('lastQuizTakenDate');
+                const storedOrder = JSON.parse(localStorage.getItem('lastQuizOrder'));
+
+                // Check if a quiz was taken today and a valid order exists
+                if (lastTakenDate === today && storedOrder && storedOrder.length === allQuestions.length) {
+                    showMessageBox("You have already taken a quiz today. The question order will remain the same for 24 hours.");
+                    // Reconstruct quizQuestions based on the stored order
+                    quizQuestions = storedOrder.map(id => allQuestions.find(q => q.id === id)).filter(q => q !== undefined);
+                    quizQuestions.forEach(q => q.answered = false); // Reset answered status for re-attempt
+                } else {
+                    // Generate new questions and order if not taken today or stored order is invalid
+                    createQuizQuestions(); // This function already shuffles and sets 'answered' to false
+                }
+
+                document.getElementById('name-entry-screen').style.display = 'none';
+                document.getElementById('quiz-container').style.display = 'flex';
+                initializeQuiz();
+            } else {
+                showMessageBox("Please enter your full name to start the quiz.");
+            }
+        });
+
+        // --- Quiz Initialization and Display ---
+        function initializeQuiz() {
+            document.getElementById('total-questions').innerText = quizQuestions.length;
+            quizStartTime = new Date();
+            startTimer();
+            updateLiveDate();
+            updateUpdatedDate();
+            loadQuestion(currentQuestionIndex);
+        }
+
+        function updateLiveDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('live-date').innerText = new Date().toLocaleDateString(undefined, options);
+        }
+
+        function updateUpdatedDate() {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('updated-date').innerText = new Date().toLocaleDateString(undefined, options);
+        }
+
+        function startTimer() {
+            const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+            let endTime = quizStartTime.getTime() + oneHour;
+
+            timerInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const timeLeft = endTime - now;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer').innerText = "00:00:00";
+                    showMessageBox("Time's up! The quiz will now be submitted.");
+                    submitQuiz(); // Automatically submit when timer runs out
+                    return;
+                }
+
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                document.getElementById('timer').innerText =
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function loadQuestion(index) {
+            const question = quizQuestions[index];
+            const mcqContent = document.getElementById('mcq-content');
+            const dragDropContent = document.getElementById('drag-drop-content');
+            const solutionContainer = document.getElementById('solution-container');
+
+            // Reset visibility
+            mcqContent.classList.add('hidden');
+            dragDropContent.classList.add('hidden');
+            solutionContainer.classList.add('hidden');
+            document.getElementById('question-area').classList.remove('special-question-border');
+
+            // Apply special question border if applicable
+            const today = getTodayDateString();
+            if (question.isSpecial && today === QUIZ_DATE) {
+                document.getElementById('question-area').classList.add('special-question-border');
+            }
+
+            document.getElementById('current-question-number').innerText = index + 1;
+
+            if (question.type === 'mcq' || question.type === 'image-mcq') {
+                mcqContent.classList.remove('hidden');
+                document.getElementById('question-text').innerText = `${index + 1}. ${question.question}`;
+
+                const optionsContainer = document.getElementById('options-container');
+                optionsContainer.innerHTML = ''; // Clear previous options
+
+                // Handle image for image-mcq
+                const questionImageDiv = document.getElementById('question-image');
+                const questionImg = questionImageDiv.querySelector('img');
+                const imageCaption = document.getElementById('image-caption');
+                if (question.type === 'image-mcq' && question.imageUrl) {
+                    questionImg.src = question.imageUrl;
+                    imageCaption.innerText = question.imageCaption || '';
+                    questionImageDiv.classList.remove('hidden');
+                } else {
+                    questionImageDiv.classList.add('hidden');
+                    questionImg.src = '';
+                    imageCaption.innerText = '';
+                }
+
+                // Shuffle options for MCQ
+                const shuffledOptions = shuffleArray([...question.options]);
+
+                shuffledOptions.forEach(option => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option-item card-sm';
+                    optionDiv.innerText = option;
+                    optionDiv.onclick = () => selectOption(optionDiv, option, question);
+                    optionsContainer.appendChild(optionDiv);
+                });
+
+                // If question was already answered, show solution and selected option
+                if (question.answered) {
+                    const selectedOptionDiv = Array.from(optionsContainer.children).find(opt => opt.innerText === question.selectedAnswer);
+                    if (selectedOptionDiv) {
+                        selectedOptionDiv.classList.add(question.isCorrect ? 'correct' : 'wrong');
+                        // Also highlight the correct answer if the user's answer was wrong
+                        if (!question.isCorrect) {
+                            const correctAnswerDiv = Array.from(optionsContainer.children).find(opt => opt.innerText === question.correctAnswer);
+                            if (correctAnswerDiv) {
+                                correctAnswerDiv.classList.add('correct');
+                            }
+                        }
+                    }
+                    document.getElementById('solution-text').innerText = question.solution;
+                    document.getElementById('solution-container').classList.remove('hidden');
+                    // Disable clicks if already answered
+                    Array.from(optionsContainer.children).forEach(optionDiv => {
+                        optionDiv.onclick = null;
+                    });
+                }
+
+            } else if (question.type === 'drag-drop') {
+                dragDropContent.classList.remove('hidden');
+                document.getElementById('drag-drop-question-text').innerText = `${index + 1}. ${question.question}`;
+                const dragDropItemsContainer = document.getElementById('drag-drop-items');
+                dragDropItemsContainer.innerHTML = '';
+
+                let draggableItems = [];
+                if (question.answered && question.userOrder) {
+                    // If answered, display in user's last order
+                    draggableItems = question.userOrder.map(id => question.items.find(item => item.id === id));
+                } else {
+                    // Otherwise, shuffle for initial display
+                    draggableItems = shuffleArray([...question.items]);
+                }
+
+
+                draggableItems.forEach((item, i) => {
+                    const dragItemDiv = document.createElement('div');
+                    dragItemDiv.className = 'drag-item';
+                    dragItemDiv.setAttribute('draggable', 'true');
+                    dragItemDiv.setAttribute('data-id', item.id);
+                    dragItemDiv.innerHTML = `<span class="drag-handle"><i class="fas fa-grip-vertical"></i></span> ${item.text}`;
+                    dragItemDiv.addEventListener('dragstart', handleDragStart);
+                    dragItemDiv.addEventListener('dragover', handleDragOver);
+                    dragItemDiv.addEventListener('drop', handleDrop);
+                    dragItemDiv.addEventListener('dragleave', handleDragLeave);
+                    dragDropItemsContainer.appendChild(dragItemDiv);
+                });
+
+                document.getElementById('check-drag-drop-button').onclick = () => checkDragDrop(question);
+
+                // If question was already answered, show solution and disable interaction
+                if (question.answered) {
+                    document.getElementById('solution-text').innerText = question.solution;
+                    document.getElementById('solution-container').classList.remove('hidden');
+                    Array.from(dragDropItemsContainer.children).forEach(item => {
+                        item.setAttribute('draggable', 'false');
+                        item.classList.add(question.isCorrect ? 'correct' : 'wrong'); // Apply feedback
+                        item.removeEventListener('dragstart', handleDragStart);
+                        item.removeEventListener('dragover', handleDragOver);
+                        item.removeEventListener('drop', handleDrop);
+                        item.removeEventListener('dragleave', handleDragLeave);
+                    });
+                    document.getElementById('check-drag-drop-button').disabled = true;
+                }
+            }
+
+            // Hide solution initially if not answered
+            if (!question.answered) {
+                document.getElementById('solution-text').innerText = '';
+            }
+        }
+
+        // --- MCQ Logic ---
+        function selectOption(selectedDiv, selectedAnswer, question) {
+            // Only process if not already answered
+            if (question.answered) return;
+
+            // Disable further clicks on options for this question
+            Array.from(document.getElementById('options-container').children).forEach(optionDiv => {
+                optionDiv.onclick = null;
+            });
+
+            question.answered = true; // Mark question as answered
+            question.selectedAnswer = selectedAnswer; // Store user's selected answer
+
+            const solutionText = document.getElementById('solution-text');
+            solutionText.innerText = question.solution;
+            document.getElementById('solution-container').classList.remove('hidden');
+
+            if (selectedAnswer === question.correctAnswer) {
+                selectedDiv.classList.add('correct');
+                score++;
+                question.isCorrect = true; // Mark as correct
+            } else {
+                selectedDiv.classList.add('wrong');
+                question.isCorrect = false; // Mark as incorrect
+                // Highlight correct answer
+                Array.from(document.getElementById('options-container').children).forEach(optionDiv => {
+                    if (optionDiv.innerText === question.correctAnswer) {
+                        optionDiv.classList.add('correct');
+                    }
+                });
+            }
+
+            // Automatically submit if this is the last question
+            if (currentQuestionIndex === quizQuestions.length - 1) {
+                setTimeout(submitQuiz, 1500); // Give a short delay to show feedback
+            }
+        }
+
+        // --- Drag and Drop Logic ---
+        let draggedItem = null;
+
+        function handleDragStart(e) {
+            draggedItem = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', draggedItem.innerHTML);
+            setTimeout(() => {
+                draggedItem.classList.add('opacity-50');
+            }, 0);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault(); // Necessary to allow drop
+            e.dataTransfer.dropEffect = 'move';
+            if (e.target.classList.contains('drag-item') && e.target !== draggedItem) {
+                e.target.classList.add('bg-blue-100'); // Visual feedback for drag over
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('drag-item')) {
+                e.target.classList.remove('bg-blue-100');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('drag-item') && e.target !== draggedItem) {
+                e.target.classList.remove('bg-blue-100');
+                const dropTarget = e.target;
+                const container = draggedItem.parentNode;
+
+                // Determine if dropping before or after the target
+                const bounding = dropTarget.getBoundingClientRect();
+                const offset = bounding.y + (bounding.height / 2);
+
+                if (e.clientY < offset) {
+                    container.insertBefore(draggedItem, dropTarget);
+                } else {
+                    container.insertBefore(draggedItem, dropTarget.nextSibling);
+                }
+            }
+            draggedItem.classList.remove('opacity-50');
+        }
+
+        function checkDragDrop(question) {
+            // Only process if not already answered
+            if (question.answered) return;
+
+            question.answered = true; // Mark question as answered
+            const dragDropItemsContainer = document.getElementById('drag-drop-items');
+            const currentOrder = Array.from(dragDropItemsContainer.children).map(item => item.getAttribute('data-id'));
+            question.userOrder = currentOrder; // Store user's order
+
+            const solutionText = document.getElementById('solution-text');
+            solutionText.innerText = question.solution;
+            document.getElementById('solution-container').classList.remove('hidden');
+
+            const isCorrect = JSON.stringify(currentOrder) === JSON.stringify(question.correctOrder);
+
+            if (isCorrect) {
+                score++;
+                question.isCorrect = true; // Mark as correct
+                Array.from(dragDropItemsContainer.children).forEach(item => item.classList.add('correct')); // Apply green pulse
+            } else {
+                question.isCorrect = false; // Mark as incorrect
+                Array.from(dragDropItemsContainer.children).forEach(item => item.classList.add('wrong')); // Apply red shake
+            }
+
+            // Disable further interaction
+            Array.from(dragDropItemsContainer.children).forEach(item => {
+                item.setAttribute('draggable', 'false');
+                item.removeEventListener('dragstart', handleDragStart);
+                item.removeEventListener('dragover', handleDragOver);
+                item.removeEventListener('drop', handleDrop);
+                item.removeEventListener('dragleave', handleDragLeave);
+            });
+            document.getElementById('check-drag-drop-button').disabled = true;
+
+            // Automatically submit if this is the last question
+            if (currentQuestionIndex === quizQuestions.length - 1) {
+                setTimeout(submitQuiz, 1500); // Give a short delay to show feedback
+            }
+        }
+
+        // --- Navigation and Progress ---
+        document.getElementById('next-button').addEventListener('click', () => {
+            // Only allow navigation if the current question has been attempted
+            const currentQuestion = quizQuestions[currentQuestionIndex];
+            if (!currentQuestion.answered) {
+                showMessageBox("Please answer the current question before proceeding.");
+                return;
+            }
+
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+            } else {
+                // If it's the last question and already answered, clicking next will submit
+                submitQuiz();
+            }
+        });
+
+        document.getElementById('prev-button').addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+            }
+        });
+
+        document.getElementById('surprise-me-button').addEventListener('click', () => {
+            const numToRandomize = Math.floor(quizQuestions.length * 0.30);
+            const currentQuestion = quizQuestions[currentQuestionIndex];
+
+            // Get a subset of questions excluding the current one
+            let availableQuestions = quizQuestions.filter((_, idx) => idx !== currentQuestionIndex);
+            availableQuestions = shuffleArray(availableQuestions);
+
+            // Select 'numToRandomize' questions from the available set
+            const questionsToShuffle = availableQuestions.slice(0, numToRandomize);
+
+            // Create a temporary array to build the new order
+            let tempQuizOrder = Array(quizQuestions.length).fill(null);
+            tempQuizOrder[currentQuestionIndex] = currentQuestion; // Keep current question fixed
+
+            let shuffledQIdx = 0;
+            const indicesToFill = shuffleArray(Array.from({length: quizQuestions.length}, (_, i) => i).filter(i => i !== currentQuestionIndex));
+
+            for (let i = 0; i < quizQuestions.length; i++) {
+                if (tempQuizOrder[i] === null) { // If this slot isn't the current question
+                    if (shuffledQIdx < questionsToShuffle.length) {
+                        tempQuizOrder[i] = questionsToShuffle[shuffledQIdx++];
+                    } else {
+                        // Fill remaining slots with non-shuffled questions that weren't picked for shuffling
+                        const originalQuestion = quizQuestions.find(q => !questionsToShuffle.includes(q) && q.id !== currentQuestion.id && !tempQuizOrder.includes(q));
+                        if (originalQuestion) {
+                            tempQuizOrder[i] = originalQuestion;
+                        }
+                    }
+                }
+            }
+            quizQuestions = tempQuizOrder.filter(q => q !== null); // Filter out any nulls if logic was imperfect
+
+            // Re-shuffle the final quizQuestions array to ensure randomness, while keeping the current question's position relative
+            const currentQuestionId = currentQuestion.id;
+            const currentQuestionOriginalIndex = quizQuestions.findIndex(q => q.id === currentQuestionId);
+
+            let questionsBefore = quizQuestions.slice(0, currentQuestionOriginalIndex);
+            let questionsAfter = quizQuestions.slice(currentQuestionOriginalIndex + 1);
+
+            questionsBefore = shuffleArray(questionsBefore);
+            questionsAfter = shuffleArray(questionsAfter);
+
+            quizQuestions = [...questionsBefore, currentQuestion, ...questionsAfter];
+
+            // Update currentQuestionIndex after full shuffle to ensure it points to the same question
+            currentQuestionIndex = quizQuestions.findIndex(q => q.id === currentQuestionId);
+
+            loadQuestion(currentQuestionIndex); // Reload current question, now part of new order
+            showMessageBox(`Randomized 30% of question order.`);
+        });
+
+
+        // --- Quiz Submission ---
+        document.getElementById('submit-quiz-button').addEventListener('click', submitQuiz);
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            const endTime = new Date();
+            const timeTakenMs = endTime.getTime() - quizStartTime.getTime();
+            const totalSeconds = Math.floor(timeTakenMs / 1000);
+
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const timeTakenFormatted =
+                `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+
+            // Calculate attempted questions based on the 'answered' flag
+            const attemptedQuestionsCount = quizQuestions.filter(q => q.answered).length;
+
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('results-screen').style.display = 'flex';
+
+            document.getElementById('result-name').innerText = candidateFullName;
+            document.getElementById('result-score').innerText = score;
+            document.getElementById('result-total').innerText = quizQuestions.length;
+            document.getElementById('result-attempted').innerText = attemptedQuestionsCount; // Use the accurate count
+            document.getElementById('result-time-taken').innerText = timeTakenFormatted;
+
+            // Prepare data for Formspree
+            const formData = new FormData();
+            formData.append('Name', candidateFullName);
+            formData.append('Score', `${score}/${quizQuestions.length}`);
+            formData.append('Questions Attempted', attemptedQuestionsCount);
+            formData.append('Time Taken', timeTakenFormatted);
+            formData.append('Quiz Date', getTodayDateString());
+            formData.append('Chapter', 'Acellular Life (1.1, 1.2)');
+
+            document.getElementById('submit-results-button').onclick = async () => {
+                const submissionStatus = document.getElementById('submission-status');
+                submissionStatus.innerText = 'Submitting...';
+                try {
+                    const response = await fetch(FORMSPREE_URL, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        submissionStatus.innerText = 'Results submitted successfully!';
+                        document.getElementById('submit-results-button').disabled = true; // Prevent re-submission
+                    } else {
+                        submissionStatus.innerText = 'Failed to submit results. Please try again.';
+                    }
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    submissionStatus.innerText = 'An error occurred during submission.';
+                }
+            };
+        }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show login screen initially
+            document.getElementById('login-screen').style.display = 'flex';
+        });
+    </script>
+</body>
+</html>
